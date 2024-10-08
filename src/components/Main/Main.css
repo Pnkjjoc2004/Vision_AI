@@ -1,0 +1,26 @@
+.main {
+  padding-bottom: 15vh;
+}
+
+.main .greet span {
+  background: -webkit-linear-gradient(16deg, #4bff54, #8146ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.result::-webkit-scrollbar {
+  display: none;
+}
+
+.loader hr {
+  animation: loader 3s infinite linear;
+}
+
+@keyframes loader {
+  0% {
+    background-position: -800px 0px;
+  }
+  100% {
+    background-position: 800px 0px;
+  }
+}
