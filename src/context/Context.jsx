@@ -1,5 +1,6 @@
 import { createContext, useState } from "react";
 import runChat from "../config/gemini";
+import { marked } from "marked";
 
 export const Context = createContext();
 
@@ -11,8 +12,9 @@ const ContextProvider = (props) => {
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState("");
 
+  // Helper function to delay the rendering of each word in the response
   const delayPara = (index, nextWord) => {
-    setTimeout(function () {
+    setTimeout(() => {
       setResultData((prev) => prev + nextWord);
     }, 75 * index);
   };
@@ -28,7 +30,7 @@ const ContextProvider = (props) => {
     setShowResult(true);
     let response;
     if (prompt !== undefined) {
-      response = await runChat(prompt);
+      response = await runChat(prompt); // Get response from API
       setRecentPrompt(prompt);
     } else {
       setPrevPrompts((prev) => [...prev, input]);
@@ -36,27 +38,46 @@ const ContextProvider = (props) => {
       response = await runChat(input);
     }
 
-    let responseArray = response.split("**");
-    let newResponse = "";
+    // Handle formatting for headings and bullet points
+    let responseArray = response.split("**"); // Split by custom bold markers
+    let formattedResponse = "";
     for (let i = 0; i < responseArray.length; i++) {
       if (i === 0 || i % 2 !== 1) {
-        newResponse += responseArray[i];
+        formattedResponse += responseArray[i]; // Normal text
       } else {
-        newResponse += "<b>" + responseArray[i] + "</b>";
+        formattedResponse += "<b>" + responseArray[i] + "</b>"; // Bold text
       }
     }
-    let newResponse2 = newResponse.split("*").join("</br>");
-    let newResponseArray = newResponse2.split(" ");
-    for (let i = 0; i < newResponseArray.length; i++) {
-      const nextWord = newResponseArray[i];
+
+    // Convert bullet points (*) to <li> and <ul> tags
+    formattedResponse = formattedResponse.replace(
+      /\n\* (.+?)(?=\n|$)/g,
+      "<li>$1</li>"
+    );
+    formattedResponse = "<ul>" + formattedResponse + "</ul>";
+
+    // Convert headings (#) to <h1>, <h2> tags
+    formattedResponse = formattedResponse.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+    formattedResponse = formattedResponse.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+
+    // Line breaks
+    formattedResponse = formattedResponse.replace(/\n/g, "<br/>");
+
+    // Display the formatted response word by word
+    const words = formattedResponse.split(" ");
+    for (let i = 0; i < words.length; i++) {
+      const nextWord = words[i];
       delayPara(i, nextWord + " ");
     }
+
+    const htmlResponse = marked(response);
+
+    setResultData(htmlResponse);
     setLoading(false);
     setInput("");
   };
 
-  //   onSent("What is a React Native");
-
+  // Context value that is passed to all consuming components
   const contextValue = {
     prevPrompts,
     setPrevPrompts,
