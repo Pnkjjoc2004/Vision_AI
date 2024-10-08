@@ -143,7 +143,7 @@ const Main = () => {
               {/* Result Data */}
               <div className="result-data flex items-start gap-5">
                 <img
-                  className="h-12 w-12 rounded-full object-cover"
+                  className="h-12 w-12 rounded-full object-cover hidden sm:block"
                   src={assets.vis_logo}
                   alt="AI Logo"
                 />
